@@ -1,0 +1,39 @@
+mlstub "structured_mapping_csml.ml"
+csstub "structured_mapping_csml.cs" StructuredMapping
+
+
+csfile "structured_mapping_csml.cs"
+
+public class Expr = Structured_mapping.t =
+  | Lit of float
+  | Var of string
+  | Plus of Structured_mapping.t list
+  | Exp of Structured_mapping.t * Structured_mapping.t
+  | Frac of Structured_mapping.frac
+{
+  public double Eval(List<Tuple<string,double>>) = Structured_mapping.eval;
+
+  inline [* public static Expr Fraction(Expr num, Expr den) { return new Frac(new Fraction(num, den)); } *]
+
+}
+
+public class Fraction = Structured_mapping.frac = {num as Num: Structured_mapping.t; den as Den: Structured_mapping.t}
+{
+}
+
+
+
+public class MyRecord = Structured_mapping.myrecord =
+  {
+    x: int;
+    y: Structured_mapping.myrecord option;
+  }
+{
+}
+
+public class MyVariant = Structured_mapping.myvariant =
+  | A
+  | B as Bee of string * int
+  | C of Structured_mapping.myvariant
+{
+}

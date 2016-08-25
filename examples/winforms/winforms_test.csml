@@ -1,0 +1,8 @@
+mlstub "winforms_test_stub.ml"
+csstub "winforms_test_stub.cs" WinFormsTest
+
+csfile "winforms_test_stub.cs"
+
+public static class App {
+  public static void Run() = Winforms_test.run;
+}

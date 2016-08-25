@@ -1,0 +1,22 @@
+/***************************************************************************/
+/*  CSML                                                                   */
+/*                                                                         */
+/*  Copyright (C) 2008-2014 LexiFi SAS. All rights reserved.                    */
+/*  This file is distributed under the terms of the GNU Library General    */
+/*  Public License, with the special exception on linking described in     */
+/*  file LICENSE.                                                          */
+/***************************************************************************/
+
+/* $Id: excel.csml 65120 2014-01-11 22:37:34Z jmeber $ */
+
+
+mlstub "excel_csml.ml"
+csstub "excel_csml.cs" CsmlExcel
+csfile "excel_csml.cs"
+
+public class CsmlExcel = Excel.context {
+  public double Multiply(double,double) = Excel.multiply;
+  public string Version() = Excel.version;
+  public CsmlExcel() = [* fun () -> () *];
+  inline [* static CsmlExcel() { LexiFi.Interop.CsmlExcel.Init(); } *]
+}

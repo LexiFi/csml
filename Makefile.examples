@@ -1,0 +1,108 @@
+## This Makefile is used to build the examples. It assumes the following
+## variables are set:
+##  - ROOT: the root directory of the distribution
+##  - NAME: the example CSML script is $(NAME).csml
+##  - GENERATED_FILES: files generated from $(NAME).csml
+##  - MLCODE, CSCODE: OCaml and C# source files that make up our application
+##
+## We can see below various compilation and linking strategies.
+
+all: addin_byt addin_opt standalone_byt standalone_opt
+
+include $(ROOT)/Makefile.common
+
+CSMLS ?= $(NAME).csml
+OCAMLFLAGS += -w -33
+
+addin_byt: build_addin_byt
+	@echo "******** RUNNING DEMO IN ADDIN MODE (BYT) *********"
+	$(EXECPREFIX) ./$(NAME)_byt.exe
+	@echo "**************************************************"
+
+addin_opt: build_addin_opt
+	@echo "******** RUNNING DEMO IN ADDIN MODE (OPT) ********"
+	$(EXECPREFIX) ./$(NAME)_opt.exe
+	@echo "**************************************************"
+
+standalone_byt: build_standalone_byt
+	@echo "***** RUNNING DEMO IN STANDALONE MODE (BYT) ******"
+	$(EXECPREFIX) ./$(NAME)_standalone_byt.exe
+	@echo "**************************************************"
+
+standalone_opt: build_standalone_opt
+	@echo "***** RUNNING DEMO IN STANDALONE MODE (OPT) ******"
+	$(EXECPREFIX) ./$(NAME)_standalone_opt.exe
+	@echo "**************************************************"
+
+GENERATED_FILES += $(NAME)_ml_byt.cs $(NAME)_ml_opt.cs
+
+# ADDIN MODE: the OCaml code will be dynlinked (using OCaml's Dynlink) by the main program in C#
+#
+# This mode relies on:
+#  (i) a standard native DLL (csml_ml_byt.dll) which includes the OCaml runtime,
+#      standard libraries (stdlib + dynlink + bigarray unix) and CSML libraries (csml_standalone + csml_init)
+#      and native runtime support;
+#  (ii) a standard .NET assembly (csml_byt.dll) which includes some CSML code.
+
+build_addin_byt:
+#
+# Compile the csml specification with the csml compiler
+	$(CSML) $(CSMLS)
+#
+# Link all the OCaml code into an addin
+	$(OCAMLC) -I $(CSMLDIR) $(OCAMLFLAGS) -a -o $(NAME).cma $(MLCODE)
+#
+# Compile the C# code
+	$(CSC) /out:$(NAME)_byt.exe /r:$(CSMLDIR)/csml_byt.dll $(CSCODE)
+#
+# Create local copies of needed DLLs
+	cp $(CSMLDIR)/csml_byt.dll .
+	cp $(CSMLDIR)/csml_ml_byt$(EXT_DLL) .
+
+
+# STANDALONE MODE: the OCaml code is linked in a custom native DLL which also
+#
+# In this mode, we create a custom native DLL which acts as our "main
+# OCaml program".  It combines the content of csml_ml_byt.dll (the
+# OCaml bytecode runtime + csml C/OCaml runtime) with the OCaml code
+# of our application.
+#
+
+build_standalone_byt:
+#
+# Compile the csml specification with the csml compiler
+	$(CSML) $(CSMLS)
+#
+# Link our "OCaml universe" (OCaml code + runtime system) "statically" into a DLL
+	$(OCAMLC) -I $(CSMLDIR) $(OCAMLFLAGS) -output-obj -o $(NAME)_ml_byt$(EXT_DLL) -linkall $(CSMLMLLIBS) $(MLCODE)
+#
+# csml_byt.dll expects to find the csml C/OCaml runtime in csml_ml_byt.dll.
+# But now this runtime is in $(NAME)_ml_byt.dll, so we need to make
+# a custom version of csml_byt.dll that points to this DLL instead.
+# The first step is to build a small C# file that mentions this DLL name.
+	$(CSML) -dllbind $(NAME)_ml_byt$(EXT_DLL) > $(NAME)_ml_byt.cs
+#
+# Now we can build the DLL itself. While we are at it, we can put the
+# C# code of our application directly in the same DLL as well.
+	$(CSC) /out:$(NAME)_standalone_byt.exe $(NAME)_ml_byt.cs $(shell cygpath -w $(CSMLCSCODE)) $(CSCODE)
+
+
+# The two modes are also available in native code.  Same comments as above.
+
+build_addin_opt:
+	$(CSML) $(CSMLS)
+	$(OCAMLOPT) -I $(CSMLDIR) $(OCAMLFLAGS) -shared -o $(NAME).cmxs $(MLCODE)
+	$(CSC) /out:$(NAME)_opt.exe /r:$(CSMLDIR)/csml_opt.dll $(CSCODE)
+	cp $(CSMLDIR)/csml_opt.dll .
+	cp $(CSMLDIR)/csml_ml_opt$(EXT_DLL) .
+
+
+build_standalone_opt:
+	$(CSML) $(CSMLS)
+	$(OCAMLOPT) -I $(CSMLDIR) $(OCAMLFLAGS) -output-obj -o $(NAME)_ml_opt$(EXT_DLL) -linkall $(CSMLMLLIBS:.cma=.cmxa) $(MLCODE)
+	$(CSML) -dllbind $(NAME)_ml_opt$(EXT_DLL) > $(NAME)_ml_opt.cs
+	$(CSC) /out:$(NAME)_standalone_opt.exe $(NAME)_ml_opt.cs $(CSMLCSCODE) $(CSCODE)
+
+clean::
+	rm -f *.exe *.dll *.so *.cm* *~ *.obj *.o *.lib *.a
+	rm -f $(GENERATED_FILES)

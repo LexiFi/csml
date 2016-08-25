@@ -1,0 +1,18 @@
+/* This file is released under the terms of an MIT-like license.     */
+/* See the attached LICENSE file.                                    */
+/* Copyright 2016 by LexiFi.                                         */
+
+mlstub "csml_std.ml"
+csstub "csml_std.cs" CsmlStd
+
+csfile "csml_std.cs"
+
+namespace LexiFi.Interop {
+  public class Csml {
+    public static void LoadFile(string) = Csml_iface.loadfile;
+    public static string PrintException(Exception) = Printexc.to_string;
+    public static bool MLStubAvailable(string) = Csml_iface.ml_stub_available;
+
+    public static IntPtr LazyForce(IntPtr) = [* Obj.magic Lazy.force *];
+  }
+}

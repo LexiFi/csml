@@ -1,0 +1,141 @@
+mlstub "winforms.ml"
+csstub "winforms.cs" WinForms
+
+
+csfile "winforms.cs"
+
+// We define a few helper functions in C# that will be bound directly
+// to methods in OCaml
+
+public static class Helper {
+  inline [*
+  public static void SetLocation(System.Windows.Forms.Control c, int x, int y) {
+    c.Location = new System.Drawing.Point(x, y);
+  }
+  public static void ClickHandler(System.Windows.Forms.Control c, LexiFi.Interop.ArrowVoid f) {
+    c.Click += delegate(object sender, System.EventArgs e) { f(); };
+  }
+  *]
+}
+
+mlfile "winforms.ml"
+
+class control = System.Windows.Forms.Control : object
+  method dispose: unit = instance Dispose
+  method kill: unit = kill
+
+  method set_location: int -> int -> unit = static Helper.SetLocation
+  method add_click_handler: (unit -> unit) -> unit = static Helper.ClickHandler
+  (* Note that it is ok to bind to static methods, as long as they
+     take a "this" object, of the correct type, as their first argument. *)
+
+  method show: unit = instance Show
+  method hide: unit = instance Hide
+
+  method text: string = get Text
+  method set_text: string -> unit = set Text
+
+  method as_button: button nullable = cast
+  method as_form: form nullable = cast
+  method as_label: label nullable = cast
+  (* These are downcast functions. We choose here to return
+     an option type in OCaml. We could also use functions instead
+     of methods to get a more modular organization. *)
+end
+
+class form = System.Windows.Forms.Form : object
+  inherit control
+  method show_dialog: unit = ignore instance ShowDialog
+  method add_control: control -> unit = instance Controls.Add
+end
+val create_form: unit -> form = ctor
+
+class button = System.Windows.Forms.Button : object
+  inherit control
+  (* Even if we don't add any method explicitly, CSML adds
+     a specific marker to this class so that it is actually
+     different from control. *)
+end
+val create_button: unit -> button = ctor
+
+class label = System.Windows.Forms.Label : object
+  inherit control
+end
+val create_label: unit -> label = ctor
+
+
+
+module Exn: sig
+  val source: exn -> string = get Source
+  val stack_trace: exn -> string = get StackTrace
+  val message: exn -> string = get Message
+end
+
+
+module DialogResult : sig
+  type t = System.Windows.Forms.DialogResult =
+      [ `None | `OK | `Cancel | `Abort | `Retry | `Ignore | `Yes | `No ]
+end
+
+module OpenFileDialog: sig
+  type t = System.Windows.Forms.OpenFileDialog
+  val dispose: t -> unit = instance Dispose
+  val release: t -> unit = kill
+
+  val create: unit -> t = ctor
+  val set_initial_directory: t -> string -> unit = set InitialDirectory
+  val set_title: t -> string -> unit = set Title
+  val set_filter: t -> string -> unit = set Filter
+  val set_multiselect: t -> bool -> unit = set Multiselect
+  val set_restore_directory: t -> bool -> unit = set RestoreDirectory
+  val set_filename: t -> string -> unit = set FileName
+
+  val show_dialog: t -> DialogResult.t = instance ShowDialog
+  val get_filename: t -> string = get FileName
+  val get_filenames: t -> string array = get FileNames
+
+  inline [*
+  let opt_iter f = function
+    | None -> ()
+    | Some x -> f x
+
+  let gen_run f multiselect ?filter ?title ?initial_directory ?restore_directory ?filename () =
+    let form = create () in
+    opt_iter (set_filter form) filter;
+    opt_iter (set_title form) title;
+    opt_iter (set_initial_directory form) initial_directory;
+    set_multiselect form multiselect;
+    opt_iter (set_restore_directory form) restore_directory;
+    opt_iter (set_filename form) filename;
+    let v =
+      match show_dialog form with
+      | `OK -> Some (f form)
+      | _ -> None
+    in
+    dispose form;
+    release form;
+    v
+
+  let run = gen_run get_filename false
+  let run_multi = gen_run (fun f -> Array.to_list (get_filenames f)) true
+  *]
+end
+
+module MessageBox: sig
+  type buttons = System.Windows.Forms.MessageBoxButtons =
+      [ `OK | `OKCancel | `AbortRetryIgnore | `YesNoCancel | `YesNo | `RetryCancel ]
+  val show: string -> string -> buttons -> DialogResult.t = static System.Windows.Forms.MessageBox.Show
+
+  inline [*
+  let show_result ?(title="") ?(buttons=`OK) msg =
+    show msg title buttons
+
+  let show ?title ?buttons msg =
+    ignore (show_result ?title ?buttons msg)
+
+  let show_ok_cancel ?title msg =
+    show_result ?title ~buttons:`OKCancel msg = `OK
+  let show_yes_no ?title msg =
+    show_result ?title ~buttons:`YesNo msg = `Yes
+  *]
+end

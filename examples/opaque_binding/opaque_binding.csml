@@ -1,0 +1,73 @@
+mlstub "opaque_binding_csml.ml"
+csstub "opaque_binding_csml.cs" OpaqueBinding
+
+
+csfile "opaque_binding_csml.cs"
+
+/* We define class Counter to wrap ML values of type
+   Opaque_binding.t. */
+
+public class Counter = Opaque_binding.t {
+  /* In addition, we can define extra components in this class */
+
+  public Counter(int, int) = Opaque_binding.create;
+  /* We define a constructor for the class Counter. It is bound
+     directly to a function defined in the ML module Opaque_binding.
+     Since this is a constructor for the class Counter that takes two
+     integer arguments, the ML function is expected to have type int
+     -> int -> Opaque_binding.t. */
+
+  public Counter() = [* fun () -> Opaque_binding.create 0 0 *];
+  /* We define another constructor. Here, we provide the ML
+     implementation as an inline function of type unit ->
+     Opaque_binding.t. */
+
+  public static Counter Create(int, int) = Opaque_binding.create;
+  /* Yet another way to produce objects of the Counter class. Here we
+     define a static method that takes two integers and return a
+     Counter; its ML definition is thus expected to have type int ->
+     int -> Opaque_binding.t. */
+
+  public int Linear(int) = [* fun c i -> c.Opaque_binding.foo + i * c.Opaque_binding.bar *];
+  /* This is an instance method: the ML function to be imported
+     expects an extra first argument of type Opaque_binding.t. */
+
+  public int Bar { get = Opaque_binding.get_bar; set = Opaque_binding.set_bar; }
+  /* This is a method with a getter and a setter. The ML
+     implementation of the getter takes the object as its only
+     argument (it must thus have type Opaque_binding.t -> int).  The
+     setter takes the object as its first argument and the new value
+     as its second argument (it must thus have type Opaque_binding.t
+     -> int -> unit). */
+
+  public int Foo { get = [* fun c -> c.Opaque_binding.foo *]; set = [* fun c x -> c.Opaque_binding.foo <- x *]; }
+  /* It is also possible to define properties with inline
+     implementation for getters and setters. */
+
+  public static string Version { get = Opaque_binding.version; }
+  /* A static property, to show that we can define components that are
+     not directly related to ML type being wrapped by the current
+     class. Here we define only a getter. Since it is a static
+     property, the wrapped function must have type unit -> string
+     (no extra first argument). */
+
+  public override string ToString() = Opaque_binding.to_string;
+  /* This instance method overrides the method ToString of the
+     class Object. The ML function is expected to have type
+     Opaque_binding.t -> string */
+
+  public static void Test() = Opaque_binding.test;
+}
+
+
+
+mlfile "opaque_binding_cs.ml"
+
+type t = MyClass
+
+val create: unit -> t = ctor
+val create_init: int -> t = ctor
+val get: t -> int = get Value
+val set: t -> int -> unit = set Value
+val bump: t -> unit = instance Bump
+val bump_n: t -> int -> unit = instance Bump
