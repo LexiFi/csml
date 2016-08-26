@@ -1,14 +1,11 @@
 CSML: high-levels bindings between .NET and OCaml
 =================================================
 
-Overview
---------
-
 CSML is a development tool for the community of OCaml developers under
 Windows. It lets you write applications that freely mix OCaml and .NET
 code.
 
-It can be used for the following scenarios:
+It can be used in the following scenarios:
 
 
   - Using .NET libraries (such as Winforms) from applications written
@@ -23,24 +20,25 @@ It can be used for the following scenarios:
 High-level overview
 -------------------
 
-CSML is based on a DSL to declare bi-directional bindings between
-OCaml and .NET.  In this DSL, one can specify both "pseudo-OCaml
-signatures" where each member is connected to a .NET component and
-"pseudo-C# signatures" where each member is connected to an OCaml
-component.  This means that the user is in charge of organizing the
-bindings as he/she sees fit. In particular, it is possible to choose
-custom names for imported components and to organize them into classes
-or namespaces in .NET and classes or modules in OCaml.
+CSML is based on an [Interface Definition Language](IDL.md) to declare
+bi-directional bindings between OCaml and .NET.  Scripts in this IDL
+specify both "pseudo-OCaml signatures" where each member is connected
+to a .NET component and "pseudo-C# signatures" where each member is
+connected to an OCaml component.  This means that the user is in
+charge of organizing the bindings as he/she sees fit. In particular,
+it is possible to choose custom names for imported components and to
+organize them into classes or namespaces in .NET and classes or
+modules in OCaml.
 
 See the CSML spec for the ["getting started"](examples/getting_started/getting_started.csml)
 or ["winforms"](examples/winforms/winforms.csml) examples.
 
-From such scripts, CSML generates C# and OCaml code to be compiled and
-linked separately.  This code expose components from one runtime to
-the other one (technically, this goes to the low-level FFI that both
-system provide with C).  The main program is always in .NET and
-initialize the OCaml engine explicitly before calling OCaml components
-(which can then call back into .NET).
+From such scripts, the [CSML compiler](USAGE.md) generates C# and
+OCaml code to be compiled and linked separately.  This code exposes
+components from one runtime to the other one (technically, this goes
+to the low-level FFI that both system provide with C).  The main
+program is always in .NET and initializes the OCaml engine explicitly
+before calling OCaml components (which can then call back into .NET).
 
 CSML takes care of all the *low-level details* of the bindings.  In
 particular it takes care of making sure the two runtime systems work
@@ -143,6 +141,9 @@ Even though LexiFi only maintain CSML but does not put active
 development resources into it these days, we are happy to receive
 feedback, enhancement proposals or simply discuss future evolutions
 and potential uses of the tool.
+
+CSML is currently available as "technology preview" only.  No stable
+public release have been created.
 
 
 Contact: alain.frisch@lexifi.com
