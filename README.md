@@ -135,7 +135,7 @@ initially purely as an internal tool.  It has been first released to
 the community in 2008, but only the runtime support was open-source at
 that time (the binding compiler was distributed in binary form).  In
 2016, LexiFi decided to switch to a full open-source model for CSML
-with an MIT licence for the entire system.
+with an MIT license for the entire system.
 
 Even though LexiFi only maintain CSML but does not put active
 development resources into it these days, we are happy to receive
