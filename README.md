@@ -50,7 +50,7 @@ opaque pointers from one heap to the other one) or by an automatic
 structural mapping (OCaml datatypes translated to .NET classes).
 
 *First-class functions* (in OCaml) and delegates (in .NET) are
-considered seriously in CSML. The system system relies on predefined
+considered seriously in CSML. The system relies on predefined
 .NET generic delegates to mimic the structural aspect of OCaml arrow
 types. A .NET delegate is wrapped into an OCaml closure when it enters
 the OCaml world. Similarly, an OCaml closure is wrapped into a .NET
