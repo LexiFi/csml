@@ -25,7 +25,7 @@ bi-directional bindings between OCaml and .NET.  Scripts in this IDL
 specify both "pseudo-OCaml signatures" where each member is connected
 to a .NET component and "pseudo-C# signatures" where each member is
 connected to an OCaml component.  This means that the user is in
-charge of organizing the bindings as he/she sees fit. In particular,
+charge of organizing the bindings as they see fit. In particular,
 it is possible to choose custom names for imported components and to
 organize them into classes or namespaces in .NET and classes or
 modules in OCaml.
@@ -81,12 +81,12 @@ Requirements
     with the version 3.5 of the framework, but CSML was initially
     developped against version 2.0.
 
-  - Alternatively, CSML should work under Linux with Mono and
-    hopefully the newest .NET Core framework (again probably with
-    minor adjustments to the build system).  Support for Mono was only
-    tested in the early days in the project and never used in
-    production, though.
+  - Alternatively, CSML has been tested under Linux with Mono 4.x, but
+    not used in production.
 
+  - Moreover, it is expected that CSML could be made to work with little
+    effort with the newest .NET Core framework both under Windows and
+    other systems.
 
 Installation
 ------------

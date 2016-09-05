@@ -57,7 +57,7 @@ build_addin_byt:
 #
 # Create local copies of needed DLLs
 	cp $(CSMLDIR)/csml_byt.dll .
-	cp $(CSMLDIR)/csml_ml_byt$(EXT_DLL) .
+	cp $(CSMLDIR)/libcsml_ml_byt$(EXT_DLL) .
 
 
 # STANDALONE MODE: the OCaml code is linked in a custom native DLL which also
@@ -74,17 +74,17 @@ build_standalone_byt:
 	$(CSML) $(CSMLS)
 #
 # Link our "OCaml universe" (OCaml code + runtime system) "statically" into a DLL
-	$(OCAMLC) -I $(CSMLDIR) $(OCAMLFLAGS) -output-obj -o $(NAME)_ml_byt$(EXT_DLL) -linkall $(CSMLMLLIBS) $(MLCODE)
+	$(OCAMLC) -I $(CSMLDIR) $(OCAMLFLAGS) -output-obj -o lib$(NAME)_ml_byt$(EXT_DLL) -linkall $(CSMLMLLIBS) $(MLCODE)
 #
 # csml_byt.dll expects to find the csml C/OCaml runtime in csml_ml_byt.dll.
 # But now this runtime is in $(NAME)_ml_byt.dll, so we need to make
 # a custom version of csml_byt.dll that points to this DLL instead.
 # The first step is to build a small C# file that mentions this DLL name.
-	$(CSML) -dllbind $(NAME)_ml_byt$(EXT_DLL) > $(NAME)_ml_byt.cs
+	$(CSML) -dllbind lib$(NAME)_ml_byt > $(NAME)_ml_byt.cs
 #
 # Now we can build the DLL itself. While we are at it, we can put the
 # C# code of our application directly in the same DLL as well.
-	$(CSC) /out:$(NAME)_standalone_byt.exe $(NAME)_ml_byt.cs $(shell cygpath -w $(CSMLCSCODE)) $(CSCODE)
+	$(CSC) /out:$(NAME)_standalone_byt.exe $(NAME)_ml_byt.cs $(CSMLCSCODE) $(CSCODE)
 
 
 # The two modes are also available in native code.  Same comments as above.
@@ -94,13 +94,13 @@ build_addin_opt:
 	$(OCAMLOPT) -I $(CSMLDIR) $(OCAMLFLAGS) -shared -o $(NAME).cmxs $(MLCODE)
 	$(CSC) /out:$(NAME)_opt.exe /r:$(CSMLDIR)/csml_opt.dll $(CSCODE)
 	cp $(CSMLDIR)/csml_opt.dll .
-	cp $(CSMLDIR)/csml_ml_opt$(EXT_DLL) .
+	cp $(CSMLDIR)/libcsml_ml_opt$(EXT_DLL) .
 
 
 build_standalone_opt:
 	$(CSML) $(CSMLS)
-	$(OCAMLOPT) -I $(CSMLDIR) $(OCAMLFLAGS) -output-obj -o $(NAME)_ml_opt$(EXT_DLL) -linkall $(CSMLMLLIBS:.cma=.cmxa) $(MLCODE)
-	$(CSML) -dllbind $(NAME)_ml_opt$(EXT_DLL) > $(NAME)_ml_opt.cs
+	$(OCAMLOPT) -I $(CSMLDIR) $(OCAMLFLAGS) -output-obj -o lib$(NAME)_ml_opt$(EXT_DLL) -linkall $(CSMLMLLIBS:.cma=.cmxa) $(MLCODE)
+	$(CSML) -dllbind lib$(NAME)_ml_opt > $(NAME)_ml_opt.cs
 	$(CSC) /out:$(NAME)_standalone_opt.exe $(NAME)_ml_opt.cs $(CSMLCSCODE) $(CSCODE)
 
 clean::

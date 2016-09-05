@@ -21,9 +21,8 @@ ifeq ($(SYSTEM), win32)
   endif
   CSMLCSCODE = $(shell cygpath -w $(CSMLDIR)/csml.cs)
   EXECPREFIX=
-
 else
-  CSC=gmcs
+  CSC=mcs
   CSMLCSCODE = $(CSMLDIR)/csml.cs
   EXECPREFIX=LD_LIBRARY_PATH=.
 endif

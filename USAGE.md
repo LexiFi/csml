@@ -67,17 +67,24 @@ file `csml.cs` into this assembly. It is also necessary to
 link a small C# file that indicates the name of the DLL produced above.
 The CSML compiler can generates such a file:
 
-    csml -dllbind mydll.dll > mydll_ptr.cs
+    csml -dllbind mydll > mydll_ptr.cs
 
-where `mydll.dll` is the name of the DLL with the OCaml application and
-runtime system, and `mydll_ptr.cs` is the name of the C# file to be
-created. This file must then be linked with `csml.cs` and the
-rest of the application.
+where `mydll` is the name (without the extension) of the DLL with
+the OCaml application and runtime system, and `mydll_ptr.cs` is
+the name of the C# file to be created. This file must then be linked
+with `csml.cs` and the rest of the application.
+
+Note that Mono will always prepend `lib` to a library name, unless
+it already starts with `lib`. If you are using Mono, make sure that
+the name of the compiled library starts with `lib` and has a `.so`
+extension on Linux or `.dylib` extension on macOS. There is no need
+to prepend `lib` or add an extension to the argument of `-dllbind`
+regardless of platform.
 
 ### Dynamic linking
 
-The CSML distribution comes with two pre-linked DLLs `csml_ml_byt.dll`
-and `csml_ml_opt.dll` that contain the CSML runtime library and the
+The CSML distribution comes with two pre-linked DLLs `libcsml_ml_byt.dll`
+and `libcsml_ml_opt.dll` that contain the CSML runtime library and the
 OCaml runtime (in bytecode or native form). These DLLs also contains the
 following OCaml libraries: `dynlink`, `bigarray`,
 `unix`. The distribution also comes with two files

@@ -12,4 +12,8 @@ CSMLS = winforms.csml winforms_test.csml
 
 include $(ROOT)/Makefile.examples
 
-#EXTRACSOPTS=/r:System.Windows.Forms.dll /r:System.Drawing.dll
+ifeq ($(SYSTEM), win32)
+#CSC+=/r:System.Windows.Forms.dll /r:System.Drawing.dll
+else
+CSC+=-r:System.Drawing.dll -r:System.Windows.Forms.dll
+endif

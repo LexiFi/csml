@@ -16,6 +16,10 @@ ifeq ($(TOOLCHAIN), mingw)
   EXTRACCOPTS=-ccopt -DWIN32
 endif
 
+ifneq ($(SYSTEM), win32)
+  CCLIB=-L. -lcsml
+endif
+
 all:
 # Build the compiler
 	$(OCAMLC) $(OCAMLFLAGS) -o csml$(EXE) $(COMPILER_SRCS)
@@ -41,12 +45,12 @@ all:
 	$(OCAMLOPT) -a -o csml_init.cmxa -cclib "$(CCLIB)" csml_init.ml csml_std.ml
 
 # Build native DLLs (OCaml runtime + basic libraries + csml C/OCaml runtime support)
-	$(OCAMLC) -output-obj -o csml_ml_byt$(EXT_DLL) -linkall $(CSMLMLLIBS)
-	$(OCAMLOPT) -output-obj -o csml_ml_opt$(EXT_DLL) -linkall $(CSMLMLLIBS:.cma=.cmxa)
+	$(OCAMLC) -output-obj -o libcsml_ml_byt$(EXT_DLL) -linkall $(CSMLMLLIBS)
+	$(OCAMLOPT) -output-obj -o libcsml_ml_opt$(EXT_DLL) -linkall $(CSMLMLLIBS:.cma=.cmxa)
 
 # Build C# code to link to these DLLs
-	./csml -dllbind csml_ml_byt$(EXT_DLL) > csml_ml_byt.cs
-	./csml -dllbind csml_ml_opt$(EXT_DLL) > csml_ml_opt.cs
+	./csml -dllbind libcsml_ml_byt > csml_ml_byt.cs
+	./csml -dllbind libcsml_ml_opt > csml_ml_opt.cs
 
 # Build C# DLLs (csml C# runtime support)
 	$(CSC) /target:library /out:csml_byt.dll csml_ml_byt.cs $(CSMLCSCODE)
@@ -60,4 +64,4 @@ GENERATED_FILES =\
 	csml.cs csml$(EXE)
 
 clean:
-	rm -f *.dll *.so *.cm* *~ *.obj *.o *.lib *.a $(GENERATED_FILES)
+	rm -f *.dll *.so *.cm* *~ *.obj *.o *.lib *.a *.cds $(GENERATED_FILES)
